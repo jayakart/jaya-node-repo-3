@@ -1,0 +1,39 @@
+# GitHub check that ensures PR title is compliant with naming standards
+# See https://github.com/zeke/semantic-pull-requests
+
+name: Check PR title is compliant
+on:
+  # This will always run using configuration from main branch of the target repo.
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+jobs:
+  pr-title-check:
+    name: Validate PR title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Configure which types are allowed.
+          # Default: https://github.com/commitizen/conventional-commit-types
+          types: |
+            fix
+            feat
+            chore
+          # The subject must start with a jira number
+          subjectPattern: ^([A-Z]+-[0-9]+|release\s+[0-9]+\.[0-9]+\.[0.9]+).*$
+          subjectPatternError: |
+            The subject "{subject}" found in the pull request title "{title}"
+            didn't match the configured pattern. Please ensure that the subject
+            starts with a valid jira number, e.g. "XXXX-123 Reticulated splines"
+          # If the PR only contains a single commit, the action will validate that
+          # it matches the configured pattern.
+          validateSingleCommit: true
+          # Related to `validateSingleCommit` you can opt-in to validate that the PR
+          # title matches a single commit to avoid confusion.
+          validateSingleCommitMatchesPrTitle: true
